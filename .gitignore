@@ -1,5 +1,5 @@
 *.class
-
+config
 # VS Code IDE Files
 .classpath
 .settings/
