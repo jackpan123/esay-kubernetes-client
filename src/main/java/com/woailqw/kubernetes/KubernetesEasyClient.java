@@ -1,7 +1,14 @@
 package com.woailqw.kubernetes;
 
+import com.woailqw.kubernetes.request.NginxProperties;
 import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.AppsV1Api;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.V1ContainerBuilder;
+import io.kubernetes.client.openapi.models.V1ContainerPortBuilder;
 import io.kubernetes.client.openapi.models.V1Deployment;
+import io.kubernetes.client.openapi.models.V1DeploymentBuilder;
 import io.kubernetes.client.openapi.models.V1Node;
 import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.KubeConfig;
@@ -12,16 +19,15 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
+import static com.woailqw.kubernetes.constant.KubernetesConfiguration.*;
 
 /**
  * Kubernetes manager.
  *
  * @author Jack Pan
- * @vresion 1.00 2020-07-31
+ * @version  1.00 2020-07-31
  */
-public class KubernetesEasyClient {
+public final class KubernetesEasyClient {
 
     /**
      * Kubernetes API client.
@@ -33,40 +39,142 @@ public class KubernetesEasyClient {
      */
     private KubeConfig kubeConfig;
 
-    private static final Yaml yaml = new Yaml(new SafeConstructor());
+    /**
+     * Apps V1 api.
+     */
+    private AppsV1Api appsApi;
 
-    public KubernetesEasyClient(String absoluteFilePath) throws IOException {
+    /**
+     * Core V1 api.
+     */
+    private CoreV1Api coreApi;
+
+    /**
+     * Build KubernetesEasyClient through config file.
+     *
+     * @param absoluteFilePath Absolute file path of config file.
+     * @return KubernetesEasyClient object.
+     * @throws IOException If something goes wrong.
+     */
+    public static KubernetesEasyClient buildClient(
+        final String absoluteFilePath) throws IOException {
+        return new KubernetesEasyClient(absoluteFilePath);
+    }
+
+    /**
+     * Build KubernetesEasyClient through config file.
+     *
+     * @param configFile Config file.
+     * @return KubernetesEasyClient object.
+     * @throws IOException If something goes wrong.
+     */
+    public static KubernetesEasyClient buildClient(
+        final File configFile) throws IOException {
+        return new KubernetesEasyClient(configFile);
+    }
+
+    /**
+     * Build KubernetesEasyClient through KubeConfig.
+     *
+     * @param config KubeConfig properties.
+     * @return KubernetesEasyClient object.
+     * @throws IOException If something goes wrong.
+     */
+    public static KubernetesEasyClient buildClient(
+        final KubeConfig config) throws IOException {
+        return new KubernetesEasyClient(config);
+    }
+
+    /**
+     * KubernetesEasyClient constructor through config file.
+     *
+     * @param absoluteFilePath Absolute file path of config file.
+     * @throws IOException If something goes wrong.
+     */
+    private KubernetesEasyClient(
+        final String absoluteFilePath) throws IOException {
         this(KubeConfig.loadKubeConfig(new FileReader(absoluteFilePath)));
     }
 
-    public KubernetesEasyClient(File configFile) throws IOException {
+    /**
+     * KubernetesEasyClient constructor through config file.
+     *
+     * @param configFile Kubernetes config file.
+     * @throws IOException If something goes wrong.
+     */
+    private KubernetesEasyClient(final File configFile) throws IOException {
         this(KubeConfig.loadKubeConfig(new FileReader(configFile)));
     }
 
-    public KubernetesEasyClient(KubeConfig config) throws IOException {
+    /**
+     * KubernetesEasyClient constructor through KubeConfig.
+     *
+     * @param config KubeConfig properties.
+     * @throws IOException If something goes wrong.
+     */
+    private KubernetesEasyClient(final KubeConfig config) throws IOException {
         // loading the out-of-cluster config, a kubeconfig from file-system
         this.kubeConfig = config;
         this.apiClient =  ClientBuilder.kubeconfig(config).build();
+        this.appsApi = new AppsV1Api(this.apiClient);
+        this.coreApi = new CoreV1Api(this.apiClient);
 
     }
 
+    /**
+     * Return api client.
+     *
+     * @return Api client.
+     */
     public ApiClient getApiClient() {
-        return apiClient;
+        return this.apiClient;
     }
 
+    /**
+     * Return kube config.
+     *
+     * @return KubeConfig.
+     */
     public KubeConfig getKubeConfig() {
-        return kubeConfig;
+        return this.kubeConfig;
     }
 
-    /** Load a Kubernetes config from a yaml string format*/
-    public static KubeConfig loadKubeConfig(String yamlString) {
-        Object config = yaml.load(yamlString);
+    /**
+     * Return apps api.
+     *
+     * @return Apps v1 api.
+     */
+    public AppsV1Api getAppsApi() {
+        return this.appsApi;
+    }
+
+    /**
+     * Return core api.
+     *
+     * @return Core api.
+     */
+    public CoreV1Api getCoreApi() {
+        return this.coreApi;
+    }
+
+    /**
+     * Load a Kubernetes config from a yaml string format.
+     *
+     * @param yamlString Yaml string.
+     * @return Kubeconfig object.
+     */
+    public static KubeConfig loadKubeConfig(final String yamlString) {
+        Object config = YAML.load(yamlString);
         Map<String, Object> configMap = (Map<String, Object>) config;
 
-        String currentContext = (String) configMap.get("current-context");
-        ArrayList<Object> contexts = (ArrayList<Object>) configMap.get("contexts");
-        ArrayList<Object> clusters = (ArrayList<Object>) configMap.get("clusters");
-        ArrayList<Object> users = (ArrayList<Object>) configMap.get("users");
+        String currentContext =
+            (String) configMap.get("current-context");
+        ArrayList<Object> contexts =
+            (ArrayList<Object>) configMap.get("contexts");
+        ArrayList<Object> clusters =
+            (ArrayList<Object>) configMap.get("clusters");
+        ArrayList<Object> users =
+            (ArrayList<Object>) configMap.get("users");
         Object preferences = configMap.get("preferences");
 
         KubeConfig kubeConfig = new KubeConfig(contexts, clusters, users);
@@ -76,27 +184,71 @@ public class KubernetesEasyClient {
         return kubeConfig;
     }
 
-    public static String convertYamlFileToString(Reader input) {
-        Object s = yaml.load(input);
-        return yaml.dump(s);
-    }
     /**
-     * 快速创建K8S无状态服务
-     * Create kubernetes deployment quickly.
+     * Convert yaml file to string.
      *
-     * @param software
-     * @param version
+     * @param input File reader.
+     * @return String form of yaml file.
      */
-    V1Deployment createSoftwareDeployment(String software, String version) {
-        return null;
+    public static String convertYamlFileToString(final Reader input) {
+        Object yaml = YAML.load(input);
+        return YAML.dump(yaml);
     }
 
     /**
-     * 获取Kubernetes集群的整体信息 (包含所在镜像).
-     * Access full info about kubernetes cluster (contains image list).
-     * @return
+     * Create kubernetes deployment quickly.
+     * 快速创建K8S无状态服务.
+     *
+     * @param nginxProperties Nginx Properties.
+     * @return Create result info about create deployment.
+     * @throws ApiException When something gone wrong.
      */
-    List<V1Node> getNodeInfo() {
-        return null;
+    V1Deployment createSoftwareDeployment(
+        final NginxProperties nginxProperties) throws ApiException {
+        V1Deployment nginx = new V1DeploymentBuilder()
+            .withApiVersion(APP_VERSION)
+            .withKind(DEPLOYMENT_KIND)
+            .withNewMetadata()
+            .withName(nginxProperties.getDeploymentName())
+            .endMetadata()
+            .withNewSpec()
+            .withNewSelector()
+            .withMatchLabels(nginxProperties.getLabels())
+            .endSelector()
+            .withReplicas(nginxProperties.getReplicas())
+            .withNewTemplate()
+            .withNewMetadata()
+            .withLabels(nginxProperties.getLabels())
+            .endMetadata()
+            .withNewSpec()
+            .withContainers(new V1ContainerBuilder()
+                .withName(nginxProperties.getContainerName())
+                .withImage(nginxProperties.image())
+                .withPorts(new V1ContainerPortBuilder()
+                    .withContainerPort(nginxProperties.getContainerPort())
+                    .build()).build())
+            .endSpec().endTemplate().endSpec().build();
+
+        return this.appsApi
+            .createNamespacedDeployment(
+                nginxProperties.getDeploymentNamespace(),
+                nginx, null, null, null);
+    }
+
+
+
+    /**
+     * Access full info about kubernetes cluster (contains image list),
+     * 获取Kubernetes集群的整体信息 (包含所在镜像).
+     *
+     * @return Node list.
+     * @throws ApiException When something gone wrong.
+     */
+    List<V1Node> getNodeInfo() throws ApiException {
+        // the CoreV1Api loads default api-client from global configuration.
+        CoreV1Api api = new CoreV1Api(this.apiClient);
+        return api.listNode(null, null, null,
+            null, null, null,
+            null, null, null).getItems();
     }
 }
