@@ -35,4 +35,14 @@ public final class KubernetesConfiguration {
      * Default namespace.
      */
     public static final String DEFAULT_NAMESPACE = "default";
+
+    /**
+     * Service kind.
+     */
+    public static final String SERVICE_KIND = "Service";
+
+    /**
+     * Node port type.
+     */
+    public static final String NODE_PORT = "NodePort";
 }

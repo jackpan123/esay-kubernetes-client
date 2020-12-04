@@ -4,9 +4,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.woailqw.kubernetes</groupId>
+<!--  <groupId>com.woailqw.kubernetes</groupId>-->
+  <groupId>com.lczyfz.kubernetes</groupId>
   <artifactId>esay-kubernetes-client</artifactId>
-  <version>0.01-SNAPSHOT</version>
+  <version>0.03</version>
 
   <dependencies>
     <dependency>
@@ -242,7 +243,7 @@
             <configuration>
               <archive>
                 <manifestEntries>
-                  <Automatic-Module-Name>com.amihaiemil.docker</Automatic-Module-Name>
+                  <Automatic-Module-Name>com.woailqw.kubernetes</Automatic-Module-Name>
                 </manifestEntries>
               </archive>
             </configuration>

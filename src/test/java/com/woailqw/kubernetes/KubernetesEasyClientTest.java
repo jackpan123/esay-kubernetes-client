@@ -1,5 +1,6 @@
 package com.woailqw.kubernetes;
 
+import com.woailqw.kubernetes.request.NginxProperties;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.Configuration;
@@ -11,6 +12,8 @@ import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.KubeConfig;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -95,5 +98,21 @@ public final class KubernetesEasyClientTest {
         String dump = yaml.dump(yamlString);
         Assert.assertNotNull(dump);
     }
+
+    /**
+     * Print config context.
+     *
+     * @throws IOException If something goes wrong.
+     */
+//    @Test
+    public void createDeploymentTest() throws IOException, ApiException {
+        KubernetesEasyClient kubernetesEasyClient = KubernetesEasyClient
+            .buildClient(this.kubeConfigPath);
+        Map<String, String> labels = new HashMap<>();
+        labels.put("jack11", "jacktest");
+        NginxProperties properties = new NginxProperties("jacktest-deployment", labels, "jfddfd");
+        kubernetesEasyClient.createSoftwareDeployment(properties);
+    }
+
 
 }

@@ -1,15 +1,12 @@
 package com.woailqw.kubernetes;
 
 import com.woailqw.kubernetes.request.NginxProperties;
+import com.woailqw.kubernetes.request.NodePortServiceProperties;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
-import io.kubernetes.client.openapi.models.V1ContainerBuilder;
-import io.kubernetes.client.openapi.models.V1ContainerPortBuilder;
-import io.kubernetes.client.openapi.models.V1Deployment;
-import io.kubernetes.client.openapi.models.V1DeploymentBuilder;
-import io.kubernetes.client.openapi.models.V1Node;
+import io.kubernetes.client.openapi.models.*;
 import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.KubeConfig;
 import java.io.File;
@@ -17,6 +14,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static com.woailqw.kubernetes.constant.KubernetesConfiguration.*;
@@ -25,7 +23,7 @@ import static com.woailqw.kubernetes.constant.KubernetesConfiguration.*;
  * Kubernetes manager.
  *
  * @author Jack Pan
- * @version  1.00 2020-07-31
+ * @version 1.00 2020-07-31
  */
 public final class KubernetesEasyClient {
 
@@ -203,7 +201,7 @@ public final class KubernetesEasyClient {
      * @return Create result info about create deployment.
      * @throws ApiException When something gone wrong.
      */
-    V1Deployment createSoftwareDeployment(
+    public V1Deployment createSoftwareDeployment(
         final NginxProperties nginxProperties) throws ApiException {
         V1Deployment nginx = new V1DeploymentBuilder()
             .withApiVersion(APP_VERSION)
@@ -244,11 +242,46 @@ public final class KubernetesEasyClient {
      * @return Node list.
      * @throws ApiException When something gone wrong.
      */
-    List<V1Node> getNodeInfo() throws ApiException {
+    public List<V1Node> getNodeInfo() throws ApiException {
         // the CoreV1Api loads default api-client from global configuration.
         CoreV1Api api = new CoreV1Api(this.apiClient);
         return api.listNode(null, null, null,
             null, null, null,
             null, null, null).getItems();
     }
+
+    /**
+     * Create service by NodePort type.
+     *
+     * @param properties Need property.
+     * @return Service info.
+     * @throws ApiException If something goes wrong.
+     */
+    public V1Service createServiceByNodePort(NodePortServiceProperties properties)
+            throws ApiException {
+
+        Map<String, String> label = new HashMap<>(1);
+        label.put("app", properties.getAppLabel());
+
+        V1ServicePortBuilder v1ServicePortBuilder = new V1ServicePortBuilder().withPort(80)
+                .withNewTargetPort(80);
+
+        if (properties.getNodePort() != -1) {
+            v1ServicePortBuilder.withNodePort(properties.getNodePort());
+        }
+
+        V1Service service = new V1ServiceBuilder().withApiVersion(APP_VERSION)
+                .withKind(SERVICE_KIND)
+                .withNewMetadata()
+                .withName(properties.getServiceName())
+                .endMetadata()
+                .withNewSpec().withType(NODE_PORT)
+                .withSelector(label)
+                .withPorts(v1ServicePortBuilder.build())
+                .endSpec().build();
+        return this.coreApi
+                .createNamespacedService(properties.getServiceNamespace(), service,
+                        null, null, null);
+    }
+
 }
