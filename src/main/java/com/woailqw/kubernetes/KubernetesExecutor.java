@@ -5,6 +5,7 @@ import com.woailqw.kubernetes.request.NodePortServiceProperties;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1Service;
+import io.kubernetes.client.openapi.models.V1Status;
 
 /**
  * Kubernetes executor.
@@ -35,4 +36,8 @@ public interface KubernetesExecutor {
 
     V1Service minimizeCreateService(String namespace, NodePortServiceProperties properties)
             throws ApiException;
+
+    V1Status deleteService(String name, String namespace) throws ApiException;
+
+    V1Status deleteDeployment(String name, String namespace) throws ApiException;
 }

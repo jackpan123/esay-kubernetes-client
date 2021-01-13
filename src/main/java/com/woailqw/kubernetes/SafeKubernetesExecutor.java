@@ -101,4 +101,18 @@ public class SafeKubernetesExecutor implements KubernetesExecutor {
     public V1Service minimizeCreateService(String namespace, NodePortServiceProperties properties) throws ApiException {
         return null;
     }
+
+    @Override
+    public V1Status deleteService(String name, String namespace) throws ApiException {
+        return this.client.getCoreApi()
+                .deleteNamespacedService(name, namespace, DEFAULT_PRETTY, null,
+                        0, null, null, null);
+    }
+
+    @Override
+    public V1Status deleteDeployment(String name, String namespace) throws ApiException {
+        return this.client.getAppsApi()
+                .deleteNamespacedDeployment(name, namespace, DEFAULT_PRETTY, null,
+                        0, null, null, null);
+    }
 }
