@@ -47,6 +47,9 @@ public final class KubernetesEasyClient {
      */
     private CoreV1Api coreApi;
 
+    /**
+     * Default pretty
+     */
     private static final String DEFAULT_PRETTY = "true";
 
     /**
