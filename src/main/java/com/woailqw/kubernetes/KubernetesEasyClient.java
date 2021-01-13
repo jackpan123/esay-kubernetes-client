@@ -23,7 +23,7 @@ import static com.woailqw.kubernetes.constant.KubernetesConfiguration.*;
  * Kubernetes manager.
  *
  * @author Jack Pan
- * @version 1.00 2020-07-31
+ * @version  1.04 2020-07-31
  */
 public final class KubernetesEasyClient {
 
@@ -47,6 +47,8 @@ public final class KubernetesEasyClient {
      */
     private CoreV1Api coreApi;
 
+    private static final String DEFAULT_PRETTY = "true";
+
     /**
      * Build KubernetesEasyClient through config file.
      *
@@ -55,7 +57,7 @@ public final class KubernetesEasyClient {
      * @throws IOException If something goes wrong.
      */
     public static KubernetesEasyClient buildClient(
-        final String absoluteFilePath) throws IOException {
+            final String absoluteFilePath) throws IOException {
         return new KubernetesEasyClient(absoluteFilePath);
     }
 
@@ -67,7 +69,7 @@ public final class KubernetesEasyClient {
      * @throws IOException If something goes wrong.
      */
     public static KubernetesEasyClient buildClient(
-        final File configFile) throws IOException {
+            final File configFile) throws IOException {
         return new KubernetesEasyClient(configFile);
     }
 
@@ -79,7 +81,7 @@ public final class KubernetesEasyClient {
      * @throws IOException If something goes wrong.
      */
     public static KubernetesEasyClient buildClient(
-        final KubeConfig config) throws IOException {
+            final KubeConfig config) throws IOException {
         return new KubernetesEasyClient(config);
     }
 
@@ -90,7 +92,7 @@ public final class KubernetesEasyClient {
      * @throws IOException If something goes wrong.
      */
     private KubernetesEasyClient(
-        final String absoluteFilePath) throws IOException {
+            final String absoluteFilePath) throws IOException {
         this(KubeConfig.loadKubeConfig(new FileReader(absoluteFilePath)));
     }
 
@@ -166,13 +168,13 @@ public final class KubernetesEasyClient {
         Map<String, Object> configMap = (Map<String, Object>) config;
 
         String currentContext =
-            (String) configMap.get("current-context");
+                (String) configMap.get("current-context");
         ArrayList<Object> contexts =
-            (ArrayList<Object>) configMap.get("contexts");
+                (ArrayList<Object>) configMap.get("contexts");
         ArrayList<Object> clusters =
-            (ArrayList<Object>) configMap.get("clusters");
+                (ArrayList<Object>) configMap.get("clusters");
         ArrayList<Object> users =
-            (ArrayList<Object>) configMap.get("users");
+                (ArrayList<Object>) configMap.get("users");
         Object preferences = configMap.get("preferences");
 
         KubeConfig kubeConfig = new KubeConfig(contexts, clusters, users);
@@ -201,39 +203,39 @@ public final class KubernetesEasyClient {
      * @return Create result info about create deployment.
      * @throws ApiException When something gone wrong.
      */
+    @Deprecated
     public V1Deployment createSoftwareDeployment(
-        final NginxProperties nginxProperties) throws ApiException {
-        V1Deployment nginx = new V1DeploymentBuilder()
-            .withApiVersion(APP_VERSION)
-            .withKind(DEPLOYMENT_KIND)
-            .withNewMetadata()
-            .withName(nginxProperties.getDeploymentName())
-            .endMetadata()
-            .withNewSpec()
-            .withNewSelector()
-            .withMatchLabels(nginxProperties.getLabels())
-            .endSelector()
-            .withReplicas(nginxProperties.getReplicas())
-            .withNewTemplate()
-            .withNewMetadata()
-            .withLabels(nginxProperties.getLabels())
-            .endMetadata()
-            .withNewSpec()
-            .withContainers(new V1ContainerBuilder()
-                .withName(nginxProperties.getContainerName())
-                .withImage(nginxProperties.image())
-                .withPorts(new V1ContainerPortBuilder()
-                    .withContainerPort(nginxProperties.getContainerPort())
-                    .build()).build())
-            .endSpec().endTemplate().endSpec().build();
+            final NginxProperties nginxProperties) throws ApiException {
+        V1Deployment deployment = new V1DeploymentBuilder()
+                .withApiVersion(APP_VERSION)
+                .withKind(DEPLOYMENT_KIND)
+                .withNewMetadata()
+                .withName(nginxProperties.getDeploymentName())
+                .endMetadata()
+                .withNewSpec()
+                .withNewSelector()
+                .withMatchLabels(nginxProperties.getLabels())
+                .endSelector()
+                .withReplicas(nginxProperties.getReplicas())
+                .withNewTemplate()
+                .withNewMetadata()
+                .withLabels(nginxProperties.getLabels())
+                .endMetadata()
+                .withNewSpec()
+                .withContainers(new V1ContainerBuilder()
+                        .withName(nginxProperties.getContainerName())
+                        .withImage(nginxProperties.image())
+                        .withPorts(new V1ContainerPortBuilder()
+                                .withContainerPort(nginxProperties.getContainerPort())
+                                .build()).build())
+                .endSpec().endTemplate().endSpec().build();
 
         return this.appsApi
-            .createNamespacedDeployment(
-                nginxProperties.getDeploymentNamespace(),
-                nginx, null, null, null);
+                .createNamespacedDeployment(
+                        nginxProperties.getDeploymentNamespace(),
+                        deployment, null, null, null);
+
     }
-
-
 
     /**
      * Access full info about kubernetes cluster (contains image list),
@@ -242,12 +244,27 @@ public final class KubernetesEasyClient {
      * @return Node list.
      * @throws ApiException When something gone wrong.
      */
+    @Deprecated
     public List<V1Node> getNodeInfo() throws ApiException {
-        // the CoreV1Api loads default api-client from global configuration.
-        CoreV1Api api = new CoreV1Api(this.apiClient);
-        return api.listNode(null, null, null,
-            null, null, null,
-            null, null, null).getItems();
+        return this.coreApi.listNode(null, null, null,
+                null, null, null,
+                null, null, null).getItems();
+    }
+
+    /**
+     * Get kubernetes deployment list.
+     *
+     * @return Deployment list.
+     * @throws ApiException
+     */
+    @Deprecated
+    public List<V1Deployment> getDeploymentList() throws ApiException {
+        V1DeploymentList deploymentList = this.appsApi
+                .listDeploymentForAllNamespaces(null,
+                        null, null, null, null,
+                        null, null, null, null);
+
+        return deploymentList.getItems();
     }
 
     /**
@@ -257,20 +274,22 @@ public final class KubernetesEasyClient {
      * @return Service info.
      * @throws ApiException If something goes wrong.
      */
+    @Deprecated
     public V1Service createServiceByNodePort(NodePortServiceProperties properties)
             throws ApiException {
 
         Map<String, String> label = new HashMap<>(1);
         label.put("app", properties.getAppLabel());
 
-        V1ServicePortBuilder v1ServicePortBuilder = new V1ServicePortBuilder().withPort(80)
-                .withNewTargetPort(80);
+        V1ServicePortBuilder v1ServicePortBuilder = new V1ServicePortBuilder()
+                .withPort(properties.getServicePort())
+                .withNewTargetPort(properties.getServiceTargetPort());
 
         if (properties.getNodePort() != -1) {
             v1ServicePortBuilder.withNodePort(properties.getNodePort());
         }
 
-        V1Service service = new V1ServiceBuilder().withApiVersion(APP_VERSION)
+        V1Service service = new V1ServiceBuilder().withApiVersion(SERVICE_VERSION)
                 .withKind(SERVICE_KIND)
                 .withNewMetadata()
                 .withName(properties.getServiceName())
@@ -279,9 +298,37 @@ public final class KubernetesEasyClient {
                 .withSelector(label)
                 .withPorts(v1ServicePortBuilder.build())
                 .endSpec().build();
-        return this.coreApi
+        V1Service namespacedService = this.coreApi
                 .createNamespacedService(properties.getServiceNamespace(), service,
-                        null, null, null);
+                        DEFAULT_PRETTY, null, null);
+
+        return namespacedService;
     }
 
+
+    /**
+     * Delete service by name and namespace.
+     *
+     * @param name Service name.
+     * @param namespace Namespace.
+     * @throws ApiException If something goes wrong.
+     */
+    @Deprecated
+    public V1Status deleteService(String name, String namespace) throws ApiException {
+        return this.coreApi.deleteNamespacedService(name, namespace, DEFAULT_PRETTY, null,
+                0, null, null, null);
+    }
+
+    /**
+     * Delete service by name and namespace.
+     *
+     * @param name Service name.
+     * @param namespace Namespace.
+     * @throws ApiException If something goes wrong.
+     */
+    @Deprecated
+    public V1Status deleteDeployment(String name, String namespace) throws ApiException {
+        return this.appsApi.deleteNamespacedDeployment(name, namespace, DEFAULT_PRETTY, null,
+                0, null, null, null);
+    }
 }

@@ -45,4 +45,9 @@ public final class KubernetesConfiguration {
      * Node port type.
      */
     public static final String NODE_PORT = "NodePort";
+
+    /**
+     * Kubernetes app version.
+     */
+    public static final String SERVICE_VERSION = "v1";
 }
