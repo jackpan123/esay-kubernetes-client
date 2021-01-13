@@ -1,7 +1,7 @@
-package com.woailqw.kubernetes.request;
+package com.jackpan.kubernetes.request;
 
-import com.woailqw.kubernetes.constant.KubernetesConfiguration;
-import com.woailqw.kubernetes.constant.SoftwareType;
+import com.jackpan.kubernetes.constant.KubernetesConfiguration;
+import com.jackpan.kubernetes.constant.SoftwareType;
 import java.util.Map;
 
 /**

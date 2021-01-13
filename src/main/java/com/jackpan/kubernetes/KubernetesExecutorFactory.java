@@ -1,4 +1,4 @@
-package com.woailqw.kubernetes;
+package com.jackpan.kubernetes;
 
 /**
  * @author jackpan

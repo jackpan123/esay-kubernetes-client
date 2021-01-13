@@ -1,7 +1,7 @@
-package com.woailqw.kubernetes.request;
+package com.jackpan.kubernetes.request;
 
 import com.sun.istack.internal.NotNull;
-import com.woailqw.kubernetes.constant.KubernetesConfiguration;
+import com.jackpan.kubernetes.constant.KubernetesConfiguration;
 
 import java.util.HashMap;
 import java.util.Map;

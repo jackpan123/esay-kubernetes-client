@@ -1,4 +1,4 @@
-package com.woailqw.kubernetes.constant;
+package com.jackpan.kubernetes.constant;
 
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;

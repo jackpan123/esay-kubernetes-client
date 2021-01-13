@@ -1,7 +1,7 @@
-package com.woailqw.kubernetes.request;
+package com.jackpan.kubernetes.request;
 
 
-import com.woailqw.kubernetes.constant.KubernetesConfiguration;
+import com.jackpan.kubernetes.constant.KubernetesConfiguration;
 
 /**
  * Properties for node port service creation.

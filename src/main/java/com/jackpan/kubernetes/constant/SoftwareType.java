@@ -1,4 +1,4 @@
-package com.woailqw.kubernetes.constant;
+package com.jackpan.kubernetes.constant;
 
 /**
  * Contain software type and version, like(type: nginx

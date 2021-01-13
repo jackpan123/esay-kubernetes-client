@@ -1,12 +1,12 @@
-package com.woailqw.kubernetes;
+package com.jackpan.kubernetes;
 
-import com.woailqw.kubernetes.request.DeploymentProperties;
-import com.woailqw.kubernetes.request.NodePortServiceProperties;
+import com.jackpan.kubernetes.request.DeploymentProperties;
+import com.jackpan.kubernetes.request.NodePortServiceProperties;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.models.*;
 
-import static com.woailqw.kubernetes.constant.KubernetesConfiguration.APP_VERSION;
-import static com.woailqw.kubernetes.constant.KubernetesConfiguration.DEPLOYMENT_KIND;
+import static com.jackpan.kubernetes.constant.KubernetesConfiguration.APP_VERSION;
+import static com.jackpan.kubernetes.constant.KubernetesConfiguration.DEPLOYMENT_KIND;
 
 /**
  * @author jackpan

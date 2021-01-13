@@ -1,6 +1,6 @@
-package com.woailqw.kubernetes;
+package com.jackpan.kubernetes;
 
-import com.woailqw.kubernetes.request.DeploymentProperties;
+import com.jackpan.kubernetes.request.DeploymentProperties;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.Configuration;

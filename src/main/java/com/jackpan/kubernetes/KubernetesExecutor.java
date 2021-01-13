@@ -1,7 +1,7 @@
-package com.woailqw.kubernetes;
+package com.jackpan.kubernetes;
 
-import com.woailqw.kubernetes.request.DeploymentProperties;
-import com.woailqw.kubernetes.request.NodePortServiceProperties;
+import com.jackpan.kubernetes.request.NodePortServiceProperties;
+import com.jackpan.kubernetes.request.DeploymentProperties;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1Service;
