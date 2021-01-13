@@ -1,19 +1,18 @@
 package com.woailqw.kubernetes;
 
-import com.woailqw.kubernetes.request.NginxProperties;
+import com.woailqw.kubernetes.request.DeploymentProperties;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.Configuration;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1DeploymentList;
 import io.kubernetes.client.openapi.models.V1PodList;
 import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.KubeConfig;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -104,14 +103,15 @@ public final class KubernetesEasyClientTest {
      *
      * @throws IOException If something goes wrong.
      */
-//    @Test
-    public void createDeploymentTest() throws IOException, ApiException {
-        KubernetesEasyClient kubernetesEasyClient = KubernetesEasyClient
+    //@Test
+    public void minimizeCreateDeploymentTest() throws IOException, ApiException {
+        KubernetesEasyClient client = KubernetesEasyClient
             .buildClient(this.kubeConfigPath);
-        Map<String, String> labels = new HashMap<>();
-        labels.put("jack11", "jacktest");
-        NginxProperties properties = new NginxProperties("jacktest-deployment", labels, "jfddfd");
-        kubernetesEasyClient.createSoftwareDeployment(properties);
+        DeploymentProperties.Builder build = new DeploymentProperties.Builder("jack-test", "nginx", "1.14.2");
+        KubernetesExecutor executor = new SafeKubernetesExecutor(client);
+
+        V1Deployment aDefault = executor.minimizeCreateStatelessDeployment("default", build.build());
+
     }
 
 

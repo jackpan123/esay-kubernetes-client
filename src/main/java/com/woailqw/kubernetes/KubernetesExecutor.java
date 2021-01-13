@@ -30,7 +30,7 @@ public interface KubernetesExecutor {
     V1Deployment minimizeCreateStatelessDeployment(String namespace, DeploymentProperties properties)
             throws ApiException;
 
-    V1Deployment minimizeCreateSStatefulDeployment(String namespace, DeploymentProperties properties)
+    V1Deployment minimizeCreateStatefulDeployment(String namespace, DeploymentProperties properties)
             throws ApiException;
 
     V1Service minimizeCreateService(String namespace, NodePortServiceProperties properties)

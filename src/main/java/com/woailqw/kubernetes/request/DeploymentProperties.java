@@ -1,5 +1,6 @@
 package com.woailqw.kubernetes.request;
 
+import com.sun.istack.internal.NotNull;
 import com.woailqw.kubernetes.constant.KubernetesConfiguration;
 
 import java.util.HashMap;
@@ -11,12 +12,15 @@ import java.util.Map;
  */
 public class DeploymentProperties {
 
-    public static final Integer DEFAULT_REPLICAS = 3;
+    /**
+     * Kubernetes namespace.
+     */
+    private String namespace;
 
     /**
-     * Deployment namespace.
+     * Deployment name.
      */
-    private String deploymentNamespace;
+    private String name;
 
     /**
      * Software.
@@ -27,11 +31,6 @@ public class DeploymentProperties {
      * Nginx version.
      */
     private String version;
-
-    /**
-     * Deployment name.
-     */
-    private String deploymentName;
 
     /**
      * Labels.
@@ -54,23 +53,32 @@ public class DeploymentProperties {
     private Integer replicas;
 
     private DeploymentProperties(Builder builder) {
-        this.deploymentNamespace = builder.deploymentNamespace;
-        this.deploymentName = builder.deploymentName;
+        this.namespace = builder.namespace;
+        this.name = builder.name;
         this.containerName = builder.containerName;
         this.containerPort = builder.containerPort;
         this.replicas = builder.replicas;
         this.labels = builder.labels;
-        this.software = builder.software;
+        this.software = builder.imageName;
         this.version = builder.version;
     }
 
     /**
-     * Gets deploymentNamespace.
+     * Gets namespace.
      *
-     * @return Value of deploymentNamespace.
+     * @return Value of namespace.
      */
-    public String getDeploymentNamespace() {
-        return this.deploymentNamespace;
+    public String getNamespace() {
+        return this.namespace;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return Value of name.
+     */
+    public String getName() {
+        return this.name;
     }
 
     /**
@@ -78,26 +86,9 @@ public class DeploymentProperties {
      *
      * @return Value of software.
      */
-    public String getSoftware() {
-        return this.software + ":" + this.version;
-    }
-
-    /**
-     * Gets version.
-     *
-     * @return Value of version.
-     */
-    public String getVersion() {
-        return this.version;
-    }
-
-    /**
-     * Gets deploymentName.
-     *
-     * @return Value of deploymentName.
-     */
-    public String getDeploymentName() {
-        return this.deploymentName;
+    public String image() {
+        return version == null ? this.software :
+                this.software + ":" + this.version;
     }
 
     /**
@@ -138,16 +129,21 @@ public class DeploymentProperties {
 
     public static class Builder {
 
+        private static final Integer DEFAULT_REPLICAS = 1;
+
+        private static final String DEFAULT_LABEL_KEY = "app";
+
         /**
-         * Deployment namespace.
+         * Namespace.
          */
-        private String deploymentNamespace =
+        private String namespace =
                 KubernetesConfiguration.DEFAULT_NAMESPACE;
 
         /**
          * Software.
          */
-        private String software;
+        @NotNull
+        private String imageName;
 
         /**
          * Nginx version.
@@ -157,17 +153,18 @@ public class DeploymentProperties {
         /**
          * Deployment name.
          */
-        private String deploymentName;
+        @NotNull
+        private String name;
 
         /**
          * Labels.
          */
-        private Map<String, String> labels;
+        private Map<String, String> labels = new HashMap<>();
 
         /**
          * Container name.
          */
-        private String containerName = null;
+        private String containerName;
 
         /**
          * Container port.
@@ -179,29 +176,26 @@ public class DeploymentProperties {
          */
         private Integer replicas = DEFAULT_REPLICAS;
 
-        public Builder(String deploymentName, String software, String version,
-                       String containerName, Integer containerPort) {
-            this.deploymentName = deploymentName;
-            this.software = software;
+        public Builder(String name, String imageName, String version) {
+            this.name = name;
+            this.imageName = imageName;
             this.version = version;
-            this.containerName = containerName;
-            this.containerPort = containerPort;
-            labels = new HashMap<>(1);
-            labels.put("app", "defaultLabels");
+            labels.put(DEFAULT_LABEL_KEY, name);
+            this.containerName = name;
+        }
+
+        public Builder namespace(String namespace) {
+            this.namespace = namespace;
+            return this;
         }
 
         public Builder labels(Map<String, String> labels) {
-            this.labels = labels;
+            this.labels.putAll(labels);
             return this;
         }
 
-        public Builder labels(String label) {
-            this.labels.put("app", label);
-            return this;
-        }
-
-        public Builder deploymentNamespace(String deploymentNamespace) {
-            this.deploymentNamespace = deploymentNamespace;
+        public Builder labels(String key, String value) {
+            this.labels.put(key, value);
             return this;
         }
 
