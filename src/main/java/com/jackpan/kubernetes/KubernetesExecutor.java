@@ -3,9 +3,13 @@ package com.jackpan.kubernetes;
 import com.jackpan.kubernetes.request.NodePortServiceProperties;
 import com.jackpan.kubernetes.request.DeploymentProperties;
 import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.models.V1ConfigMap;
 import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1Service;
 import io.kubernetes.client.openapi.models.V1Status;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Kubernetes executor.
@@ -40,4 +44,10 @@ public interface KubernetesExecutor {
     V1Status deleteService(String name, String namespace) throws ApiException;
 
     V1Status deleteDeployment(String name, String namespace) throws ApiException;
+
+    V1Deployment createNginxDeploymentWithConfigMap(DeploymentProperties properties,
+                                                    String configMapName, List<String> configFileList) throws ApiException;
+
+    V1ConfigMap createConfigMap(String namespace,
+                                Map<String, String> configMap) throws ApiException;
 }

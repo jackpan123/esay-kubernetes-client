@@ -5,6 +5,9 @@ import com.jackpan.kubernetes.request.NodePortServiceProperties;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.models.*;
 
+import java.util.List;
+import java.util.Map;
+
 import static com.jackpan.kubernetes.constant.KubernetesConfiguration.APP_VERSION;
 import static com.jackpan.kubernetes.constant.KubernetesConfiguration.DEPLOYMENT_KIND;
 
@@ -115,4 +118,26 @@ public class SafeKubernetesExecutor implements KubernetesExecutor {
                 .deleteNamespacedDeployment(name, namespace, DEFAULT_PRETTY, null,
                         0, null, null, null);
     }
+
+    @Override
+    public V1Deployment createNginxDeploymentWithConfigMap
+            (DeploymentProperties properties,
+             String configMapName, List<String> configFileList)
+            throws ApiException {
+        V1Deployment v1Deployment = KubernetesExecutorFactory
+                .buildNginxDeployemntWithConfigMap(properties,
+                        configMapName, configFileList);
+        return this.createDeployment(properties.getNamespace(), v1Deployment);
+    }
+
+    @Override
+    public V1ConfigMap createConfigMap(String namespace, Map<String, String> configMap) throws ApiException {
+        V1ConfigMap v1ConfigMap =
+            new V1ConfigMapBuilder().addToData(configMap).build();
+        return this.client.getCoreApi()
+            .createNamespacedConfigMap(namespace, v1ConfigMap,
+                DEFAULT_PRETTY, null, null);
+    }
+
+
 }
