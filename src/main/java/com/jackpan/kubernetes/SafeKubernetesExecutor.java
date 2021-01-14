@@ -4,9 +4,17 @@ import com.jackpan.kubernetes.request.DeploymentProperties;
 import com.jackpan.kubernetes.request.NodePortServiceProperties;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.models.*;
+import org.apache.commons.compress.utils.IOUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.jackpan.kubernetes.constant.KubernetesConfiguration.APP_VERSION;
 import static com.jackpan.kubernetes.constant.KubernetesConfiguration.DEPLOYMENT_KIND;
@@ -131,13 +139,49 @@ public class SafeKubernetesExecutor implements KubernetesExecutor {
     }
 
     @Override
-    public V1ConfigMap createConfigMap(String namespace, Map<String, String> configMap) throws ApiException {
+    public V1ConfigMap createConfigMap(String configName, String namespace, Map<String, String> configMap) throws ApiException {
         V1ConfigMap v1ConfigMap =
-            new V1ConfigMapBuilder().addToData(configMap).build();
+            new V1ConfigMapBuilder().withNewMetadata()
+                    .withName(configName).endMetadata().addToData(configMap).build();
+
         return this.client.getCoreApi()
             .createNamespacedConfigMap(namespace, v1ConfigMap,
                 DEFAULT_PRETTY, null, null);
     }
 
+    @Override
+    public V1ConfigMap createConfigMapWithInputStream
+            (String configName, String namespace, Map<String, InputStream> configMap)
+            throws ApiException, IOException {
+
+        final Map<String, String> fileByteMap = new HashMap<>(configMap.size());
+
+        for (Map.Entry<String, InputStream> entry : configMap.entrySet()) {
+            fileByteMap.put(entry.getKey(),
+                    new String(IOUtils.toByteArray(entry.getValue())));
+        }
+
+        V1ConfigMap v1ConfigMap =
+                new V1ConfigMapBuilder().withNewMetadata()
+                        .withName(configName).endMetadata().addToData(fileByteMap).build();
+
+        return this.client.getCoreApi()
+                .createNamespacedConfigMap(namespace, v1ConfigMap,
+                        DEFAULT_PRETTY, null, null);
+    }
+
+    @Override
+    public V1ConfigMap createConfigMapWithInputStream
+            (String configName, String namespace,
+             String key, InputStream configFile) throws ApiException, IOException {
+
+        V1ConfigMap v1ConfigMap =
+                new V1ConfigMapBuilder().withNewMetadata()
+                        .withName(configName).endMetadata().addToData(key,
+                        new String(IOUtils.toByteArray(configFile))).build();
+        return this.client.getCoreApi()
+                .createNamespacedConfigMap(namespace, v1ConfigMap,
+                        DEFAULT_PRETTY, null, null);
+    }
 
 }

@@ -8,6 +8,8 @@ import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1Service;
 import io.kubernetes.client.openapi.models.V1Status;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -48,6 +50,12 @@ public interface KubernetesExecutor {
     V1Deployment createNginxDeploymentWithConfigMap(DeploymentProperties properties,
                                                     String configMapName, List<String> configFileList) throws ApiException;
 
-    V1ConfigMap createConfigMap(String namespace,
+    V1ConfigMap createConfigMap(String configName, String namespace,
                                 Map<String, String> configMap) throws ApiException;
+
+    V1ConfigMap createConfigMapWithInputStream(String configName, String namespace,
+                                Map<String, InputStream> configMap) throws ApiException, IOException;
+
+    V1ConfigMap createConfigMapWithInputStream(String configName, String namespace,
+                                               String key, InputStream configFile) throws ApiException, IOException;
 }
