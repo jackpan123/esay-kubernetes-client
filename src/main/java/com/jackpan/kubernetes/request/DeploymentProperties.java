@@ -204,6 +204,16 @@ public class DeploymentProperties {
             return this;
         }
 
+        public Builder containerName(String containerName) {
+            this.containerName = containerName;
+            return this;
+        }
+
+        public Builder containerPort(Integer containerPort) {
+            this.containerPort = containerPort;
+            return this;
+        }
+
         public DeploymentProperties build() {
             return new DeploymentProperties(this);
         }

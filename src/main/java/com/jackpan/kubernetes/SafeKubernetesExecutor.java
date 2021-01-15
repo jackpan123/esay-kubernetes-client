@@ -184,4 +184,38 @@ public class SafeKubernetesExecutor implements KubernetesExecutor {
                         DEFAULT_PRETTY, null, null);
     }
 
+    @Override
+    public V1Deployment createMySQLDeploymentWithConfigMap(DeploymentProperties properties,
+                                                    String configMapName, List<String> configFileList) throws ApiException {
+
+
+        Map<String, String> map = new HashMap<>();
+        String name = "jack-mysql";
+        map.put("app", name);
+
+        new V1ContainerBuilder().withImage("mysql:5.6").withName(name).withEnv(new V1EnvVarBuilder().withName("MYSQL_ROOT_PASSWORD").withValue("root").build())
+        V1DeploymentBuilder builder = new V1DeploymentBuilder()
+                .withApiVersion(APP_VERSION)
+                .withKind(DEPLOYMENT_KIND)
+                .withNewMetadata()
+                .withName(name)
+                .withLabels(map)
+                .endMetadata()
+                .withNewSpec()
+                .withNewSelector()
+                .withMatchLabels(map)
+                .endSelector()
+                .withNewStrategy().withNewType("Recreate").endStrategy()
+                .withReplicas(1)
+                .withNewTemplate()
+                .withNewMetadata()
+                .withLabels(map)
+                .endMetadata()
+                .withNewSpec()
+                .withContainers()
+                .withVolumes(v1VolumeBuilder.build())
+                .endSpec().endTemplate().endSpec();
+        return null;
+    }
+
 }
