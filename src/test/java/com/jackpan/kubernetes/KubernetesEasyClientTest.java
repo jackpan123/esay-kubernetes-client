@@ -6,15 +6,12 @@ import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.Configuration;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
-import io.kubernetes.client.openapi.models.V1Deployment;
-import io.kubernetes.client.openapi.models.V1DeploymentList;
-import io.kubernetes.client.openapi.models.V1PodList;
+import io.kubernetes.client.openapi.models.*;
 import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.KubeConfig;
 import java.io.FileReader;
 import java.io.IOException;
 import org.junit.Assert;
-import org.junit.Test;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 /**
@@ -41,7 +38,7 @@ public final class KubernetesEasyClientTest {
      * @throws ApiException If something goes wrong.
      * @throws IOException  If something goes wrong.
      */
-    @Test
+    //@Test
     public void connectClient() throws ApiException, IOException {
         // loading the out-of-cluster config, a kubeconfig from file-system
         ApiClient client =
@@ -69,7 +66,7 @@ public final class KubernetesEasyClientTest {
      * @throws ApiException If something goes wrong.
      * @throws IOException  If something goes wrong.
      */
-    @Test
+    //@Test
     public void deploymentList() throws ApiException, IOException {
         // loading the out-of-cluster config, a kubeconfig from file-system
         ApiClient client =
@@ -89,7 +86,7 @@ public final class KubernetesEasyClientTest {
      *
      * @throws IOException If something goes wrong.
      */
-    @Test
+    //@Test
     public void printKubeConfigContext() throws IOException {
         org.yaml.snakeyaml.Yaml yaml =
             new org.yaml.snakeyaml.Yaml(new SafeConstructor());
@@ -111,6 +108,28 @@ public final class KubernetesEasyClientTest {
         KubernetesExecutor executor = new SafeKubernetesExecutor(client);
 
         V1Deployment aDefault = executor.minimizeCreateStatelessDeployment("default", build.build());
+
+    }
+
+    //@Test
+    public void createNamespaceTest() throws ApiException, IOException {
+        KubernetesEasyClient client = KubernetesEasyClient
+                .buildClient(this.kubeConfigPath);
+
+        KubernetesExecutor executor = new SafeKubernetesExecutor(client);
+        V1Namespace jacknamespace = executor.createNamespace("jacknamespace");
+        System.out.println();
+
+    }
+
+    //@Test
+    public void deleteNamespaceTest() throws ApiException, IOException {
+        KubernetesEasyClient client = KubernetesEasyClient
+                .buildClient(this.kubeConfigPath);
+
+        KubernetesExecutor executor = new SafeKubernetesExecutor(client);
+        V1Status jacknamespace = executor.deleteNamespace("jacknamespace");
+        System.out.println();
 
     }
 

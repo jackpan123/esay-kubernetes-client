@@ -3,10 +3,7 @@ package com.jackpan.kubernetes;
 import com.jackpan.kubernetes.request.NodePortServiceProperties;
 import com.jackpan.kubernetes.request.DeploymentProperties;
 import io.kubernetes.client.openapi.ApiException;
-import io.kubernetes.client.openapi.models.V1ConfigMap;
-import io.kubernetes.client.openapi.models.V1Deployment;
-import io.kubernetes.client.openapi.models.V1Service;
-import io.kubernetes.client.openapi.models.V1Status;
+import io.kubernetes.client.openapi.models.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,4 +58,8 @@ public interface KubernetesExecutor {
 
     V1Deployment createMySQLDeploymentWithConfigMap(DeploymentProperties properties,
                                                     String configMapName, List<String> configFileList) throws ApiException;
+
+    V1Namespace createNamespace(String namespace) throws ApiException;
+
+    V1Status deleteNamespace(String namespace) throws ApiException;
 }

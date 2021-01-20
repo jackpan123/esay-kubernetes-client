@@ -32,6 +32,11 @@ public final class KubernetesConfiguration {
     public static final String DEPLOYMENT_KIND = "Deployment";
 
     /**
+     * Deployment kind.
+     */
+    public static final String NAMESPACE_KIND = "Namespace";
+
+    /**
      * Default namespace.
      */
     public static final String DEFAULT_NAMESPACE = "default";

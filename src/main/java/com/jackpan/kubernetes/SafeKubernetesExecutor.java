@@ -16,8 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.jackpan.kubernetes.constant.KubernetesConfiguration.APP_VERSION;
-import static com.jackpan.kubernetes.constant.KubernetesConfiguration.DEPLOYMENT_KIND;
+import static com.jackpan.kubernetes.constant.KubernetesConfiguration.*;
 
 /**
  * @author jackpan
@@ -193,29 +192,63 @@ public class SafeKubernetesExecutor implements KubernetesExecutor {
         String name = "jack-mysql";
         map.put("app", name);
 
-        new V1ContainerBuilder().withImage("mysql:5.6").withName(name).withEnv(new V1EnvVarBuilder().withName("MYSQL_ROOT_PASSWORD").withValue("root").build())
-        V1DeploymentBuilder builder = new V1DeploymentBuilder()
+//        new V1ContainerBuilder().withImage("mysql:5.6").withName(name).withEnv(new V1EnvVarBuilder().withName("MYSQL_ROOT_PASSWORD").withValue("root").build())
+//        V1DeploymentBuilder builder = new V1DeploymentBuilder()
+//                .withApiVersion(APP_VERSION)
+//                .withKind(DEPLOYMENT_KIND)
+//                .withNewMetadata()
+//                .withName(name)
+//                .withLabels(map)
+//                .endMetadata()
+//                .withNewSpec()
+//                .withNewSelector()
+//                .withMatchLabels(map)
+//                .endSelector()
+//                .withNewStrategy().withNewType("Recreate").endStrategy()
+//                .withReplicas(1)
+//                .withNewTemplate()
+//                .withNewMetadata()
+//                .withLabels(map)
+//                .endMetadata()
+//                .withNewSpec()
+//                .withContainers()
+//                .withVolumes(v1VolumeBuilder.build())
+//                .endSpec().endTemplate().endSpec();
+        V1NamespaceBuilder build = new V1NamespaceBuilder()
                 .withApiVersion(APP_VERSION)
-                .withKind(DEPLOYMENT_KIND)
+                .withKind(NAMESPACE_KIND)
                 .withNewMetadata()
-                .withName(name)
-                .withLabels(map)
-                .endMetadata()
-                .withNewSpec()
-                .withNewSelector()
-                .withMatchLabels(map)
-                .endSelector()
-                .withNewStrategy().withNewType("Recreate").endStrategy()
-                .withReplicas(1)
-                .withNewTemplate()
-                .withNewMetadata()
-                .withLabels(map)
-                .endMetadata()
-                .withNewSpec()
-                .withContainers()
-                .withVolumes(v1VolumeBuilder.build())
-                .endSpec().endTemplate().endSpec();
+                .withName("")
+                .endMetadata();
+        this.client.getCoreApi().createNamespace(build.build(), DEFAULT_PRETTY, null, null);
         return null;
     }
 
+    @Override
+    public V1Namespace createNamespace(String namespace) throws ApiException {
+
+        V1NamespaceBuilder build = new V1NamespaceBuilder()
+                .withApiVersion(SERVICE_VERSION)
+                .withKind(NAMESPACE_KIND)
+                .withNewMetadata()
+                .withName(namespace)
+                .endMetadata();
+
+        return this.client.getCoreApi()
+                .createNamespace(build.build(), DEFAULT_PRETTY, null, null);
+    }
+
+    @Override
+    public V1Status deleteNamespace(String namespace) throws ApiException {
+
+        V1Status status = null;
+        try {
+            status = this.client.getCoreApi()
+                    .deleteNamespace(namespace, DEFAULT_PRETTY, null, null, null, null, new V1DeleteOptions());
+        } catch (Exception e) {
+            // Kubernetes source code error.
+        }
+
+        return status;
+    }
 }
