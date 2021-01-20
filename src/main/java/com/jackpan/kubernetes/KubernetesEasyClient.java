@@ -270,43 +270,6 @@ public final class KubernetesEasyClient {
         return deploymentList.getItems();
     }
 
-    /**
-     * Create service by NodePort type.
-     *
-     * @param properties Need property.
-     * @return Service info.
-     * @throws ApiException If something goes wrong.
-     */
-    @Deprecated
-    public V1Service createServiceByNodePort(NodePortServiceProperties properties)
-            throws ApiException {
-
-        Map<String, String> label = new HashMap<>(1);
-        label.put("app", properties.getAppLabel());
-
-        V1ServicePortBuilder v1ServicePortBuilder = new V1ServicePortBuilder()
-                .withPort(properties.getServicePort())
-                .withNewTargetPort(properties.getServiceTargetPort());
-
-        if (properties.getNodePort() != -1) {
-            v1ServicePortBuilder.withNodePort(properties.getNodePort());
-        }
-
-        V1Service service = new V1ServiceBuilder().withApiVersion(SERVICE_VERSION)
-                .withKind(SERVICE_KIND)
-                .withNewMetadata()
-                .withName(properties.getServiceName())
-                .endMetadata()
-                .withNewSpec().withType(NODE_PORT)
-                .withSelector(label)
-                .withPorts(v1ServicePortBuilder.build())
-                .endSpec().build();
-        V1Service namespacedService = this.coreApi
-                .createNamespacedService(properties.getServiceNamespace(), service,
-                        DEFAULT_PRETTY, null, null);
-
-        return namespacedService;
-    }
 
 
     /**

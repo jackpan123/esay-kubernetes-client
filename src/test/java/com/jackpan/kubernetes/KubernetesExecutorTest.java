@@ -1,6 +1,11 @@
 package com.jackpan.kubernetes;
 
+import com.jackpan.kubernetes.request.DeploymentProperties;
+import com.jackpan.kubernetes.request.NodePortServiceProperties;
 import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.models.V1Deployment;
+import io.kubernetes.client.openapi.models.V1Service;
+import org.junit.Test;
 
 import java.io.*;
 import java.util.HashMap;
@@ -56,5 +61,31 @@ public class KubernetesExecutorTest {
             map.put("default.conf", defaultConf);
             executor.createConfigMapWithInputStream("nginx-config1", "default", map);
         }
+    }
+
+    //@Test
+    public void createMysqlDeployment() throws ApiException, IOException {
+        KubernetesEasyClient client = KubernetesEasyClient
+                .buildClient(this.kubeConfigPath);
+
+        KubernetesExecutor executor = new SafeKubernetesExecutor(client);
+
+        //V1Deployment mySQLDeploymentWithConfigMap = executor.createMySQLDeployment();
+        System.out.println();
+    }
+
+    @Test
+    public void createService() throws ApiException, IOException {
+        KubernetesEasyClient client = KubernetesEasyClient
+                .buildClient(this.kubeConfigPath);
+
+        KubernetesExecutor executor = new SafeKubernetesExecutor(client);
+
+        Map<String, String> labels = new HashMap<>();
+        labels.put("app", "jack-mysql");
+        NodePortServiceProperties properties = new NodePortServiceProperties.Builder("jackservice1",
+                labels, 3306, 3306).build();
+        V1Service aDefault = executor.minimizeCreateService("default", properties);
+        System.out.println();
     }
 }

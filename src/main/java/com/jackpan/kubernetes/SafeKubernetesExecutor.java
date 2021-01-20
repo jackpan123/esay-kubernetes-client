@@ -6,15 +6,11 @@ import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.models.*;
 import org.apache.commons.compress.utils.IOUtils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.jackpan.kubernetes.constant.KubernetesConfiguration.*;
 
@@ -109,7 +105,28 @@ public class SafeKubernetesExecutor implements KubernetesExecutor {
 
     @Override
     public V1Service minimizeCreateService(String namespace, NodePortServiceProperties properties) throws ApiException {
-        return null;
+
+        V1ServicePortBuilder v1ServicePortBuilder = new V1ServicePortBuilder()
+            .withPort(properties.getServicePort())
+            .withNewTargetPort(properties.getServiceTargetPort());
+
+        if (properties.getNodePort() != -1) {
+            v1ServicePortBuilder.withNodePort(properties.getNodePort());
+        }
+
+        V1Service service = new V1ServiceBuilder().withApiVersion(SERVICE_VERSION)
+            .withKind(SERVICE_KIND)
+            .withNewMetadata()
+            .withName(properties.getName())
+            .endMetadata()
+            .withNewSpec().withType(NODE_PORT)
+            .withSelector(properties.getLabels())
+            .withPorts(v1ServicePortBuilder.build())
+            .endSpec().build();
+
+        return this.createService(
+            properties.getNamespace(),
+            service);
     }
 
     @Override
@@ -184,44 +201,37 @@ public class SafeKubernetesExecutor implements KubernetesExecutor {
     }
 
     @Override
-    public V1Deployment createMySQLDeploymentWithConfigMap(DeploymentProperties properties,
-                                                    String configMapName, List<String> configFileList) throws ApiException {
+    public V1Deployment createMySQLDeployment(DeploymentProperties properties) throws ApiException {
 
 
-        Map<String, String> map = new HashMap<>();
-        String name = "jack-mysql";
-        map.put("app", name);
-
-//        new V1ContainerBuilder().withImage("mysql:5.6").withName(name).withEnv(new V1EnvVarBuilder().withName("MYSQL_ROOT_PASSWORD").withValue("root").build())
-//        V1DeploymentBuilder builder = new V1DeploymentBuilder()
-//                .withApiVersion(APP_VERSION)
-//                .withKind(DEPLOYMENT_KIND)
-//                .withNewMetadata()
-//                .withName(name)
-//                .withLabels(map)
-//                .endMetadata()
-//                .withNewSpec()
-//                .withNewSelector()
-//                .withMatchLabels(map)
-//                .endSelector()
-//                .withNewStrategy().withNewType("Recreate").endStrategy()
-//                .withReplicas(1)
-//                .withNewTemplate()
-//                .withNewMetadata()
-//                .withLabels(map)
-//                .endMetadata()
-//                .withNewSpec()
-//                .withContainers()
-//                .withVolumes(v1VolumeBuilder.build())
-//                .endSpec().endTemplate().endSpec();
-        V1NamespaceBuilder build = new V1NamespaceBuilder()
+        V1Container container = new V1ContainerBuilder()
+                .withImage(properties.image()).withName(properties.getName())
+                .withEnv(new V1EnvVarBuilder()
+                        .withName("MYSQL_ROOT_PASSWORD")
+                        .withValue(properties.getMysqlRootPassword()).build())
+                .withPorts(new V1ContainerPortBuilder().withContainerPort(properties.getContainerPort()).build()).build();
+        V1DeploymentBuilder builder = new V1DeploymentBuilder()
                 .withApiVersion(APP_VERSION)
-                .withKind(NAMESPACE_KIND)
+                .withKind(DEPLOYMENT_KIND)
                 .withNewMetadata()
-                .withName("")
-                .endMetadata();
-        this.client.getCoreApi().createNamespace(build.build(), DEFAULT_PRETTY, null, null);
-        return null;
+                .withName(properties.getName())
+                .withLabels(properties.getLabels())
+                .endMetadata()
+                .withNewSpec()
+                .withNewSelector()
+                .withMatchLabels(properties.getLabels())
+                .endSelector()
+                .withNewStrategy().withNewType(properties.getStrategy()).endStrategy()
+                .withReplicas(properties.getReplicas())
+                .withNewTemplate()
+                .withNewMetadata()
+                .withLabels(properties.getLabels())
+                .endMetadata()
+                .withNewSpec()
+                .withContainers(container)
+                .endSpec().endTemplate().endSpec();
+
+        return this.createDeployment(properties.getNamespace(), builder.build());
     }
 
     @Override

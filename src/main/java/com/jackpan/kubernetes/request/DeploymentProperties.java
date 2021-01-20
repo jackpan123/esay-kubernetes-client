@@ -1,6 +1,5 @@
 package com.jackpan.kubernetes.request;
 
-import com.sun.istack.internal.NotNull;
 import com.jackpan.kubernetes.constant.KubernetesConfiguration;
 
 import java.util.HashMap;
@@ -52,6 +51,16 @@ public class DeploymentProperties {
      */
     private Integer replicas;
 
+    /**
+     * Strategy.
+     */
+    private String strategy;
+
+    /**
+     * Mysql root password.
+     */
+    private String mysqlRootPassword;
+
     private DeploymentProperties(Builder builder) {
         this.namespace = builder.namespace;
         this.name = builder.name;
@@ -61,6 +70,8 @@ public class DeploymentProperties {
         this.labels = builder.labels;
         this.software = builder.imageName;
         this.version = builder.version;
+        this.strategy = builder.strategy;
+        this.mysqlRootPassword = builder.mysqlRootPassword;
     }
 
     /**
@@ -127,6 +138,24 @@ public class DeploymentProperties {
         return this.replicas;
     }
 
+    /**
+     * Gets strategy.
+     *
+     * @return Value of strategy.
+     */
+    public String getStrategy() {
+        return this.strategy;
+    }
+
+    /**
+     * Gets mysqlRootPassword.
+     *
+     * @return Value of mysqlRootPassword.
+     */
+    public String getMysqlRootPassword() {
+        return this.mysqlRootPassword;
+    }
+
     public static class Builder {
 
         private static final Integer DEFAULT_REPLICAS = 1;
@@ -142,7 +171,6 @@ public class DeploymentProperties {
         /**
          * Software.
          */
-        @NotNull
         private String imageName;
 
         /**
@@ -153,7 +181,6 @@ public class DeploymentProperties {
         /**
          * Deployment name.
          */
-        @NotNull
         private String name;
 
         /**
@@ -175,6 +202,16 @@ public class DeploymentProperties {
          * Replicas.
          */
         private Integer replicas = DEFAULT_REPLICAS;
+
+        /**
+         * Strategy.
+         */
+        private String strategy;
+
+        /**
+         * Mysql root password.
+         */
+        private String mysqlRootPassword;
 
         public Builder(String name, String imageName, String version) {
             this.name = name;
@@ -211,6 +248,16 @@ public class DeploymentProperties {
 
         public Builder containerPort(Integer containerPort) {
             this.containerPort = containerPort;
+            return this;
+        }
+
+        public Builder strategy(String strategy) {
+            this.strategy = strategy;
+            return this;
+        }
+
+        public Builder mysqlRootPassword(String mysqlRootPassword) {
+            this.mysqlRootPassword = mysqlRootPassword;
             return this;
         }
 

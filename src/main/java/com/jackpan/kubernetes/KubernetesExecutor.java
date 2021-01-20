@@ -56,8 +56,7 @@ public interface KubernetesExecutor {
     V1ConfigMap createConfigMapWithInputStream(String configName, String namespace,
                                                String key, InputStream configFile) throws ApiException, IOException;
 
-    V1Deployment createMySQLDeploymentWithConfigMap(DeploymentProperties properties,
-                                                    String configMapName, List<String> configFileList) throws ApiException;
+    V1Deployment createMySQLDeployment(DeploymentProperties properties) throws ApiException;
 
     V1Namespace createNamespace(String namespace) throws ApiException;
 

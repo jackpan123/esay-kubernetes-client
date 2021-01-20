@@ -3,6 +3,8 @@ package com.jackpan.kubernetes.request;
 
 import com.jackpan.kubernetes.constant.KubernetesConfiguration;
 
+import java.util.Map;
+
 /**
  * Properties for node port service creation.
  *
@@ -11,11 +13,14 @@ import com.jackpan.kubernetes.constant.KubernetesConfiguration;
  */
 public class NodePortServiceProperties {
 
-    private String serviceNamespace;
+    private String namespace;
 
-    private String serviceName;
+    private String name;
 
-    private String appLabel;
+    /**
+     * Labels.
+     */
+    private Map<String, String> labels;
 
     private Integer servicePort;
 
@@ -24,9 +29,9 @@ public class NodePortServiceProperties {
     private Integer nodePort;
 
     private NodePortServiceProperties(Builder builder) {
-        this.serviceNamespace = builder.serviceNamespace;
-        this.serviceName = builder.serviceName;
-        this.appLabel = builder.appLabel;
+        this.namespace = builder.namespace;
+        this.name = builder.name;
+        this.labels = builder.labels;
         this.servicePort = builder.servicePort;
         this.serviceTargetPort = builder.serviceTargetPort;
         this.nodePort = builder.nodePort;
@@ -34,11 +39,14 @@ public class NodePortServiceProperties {
 
     public static class Builder {
 
-        private String serviceNamespace;
+        private String namespace;
 
-        private String serviceName;
+        private String name;
 
-        private String appLabel;
+        /**
+         * Labels.
+         */
+        private Map<String, String> labels;
 
         private Integer servicePort;
 
@@ -46,18 +54,18 @@ public class NodePortServiceProperties {
 
         private Integer nodePort;
 
-        public Builder(String serviceName, String appLabel,
+        public Builder(String name, Map<String, String> labels,
             Integer servicePort, Integer serviceTargetPort) {
-            this.serviceNamespace = KubernetesConfiguration.DEFAULT_NAMESPACE;
-            this.serviceName = serviceName;
-            this.appLabel = appLabel;
+            this.namespace = KubernetesConfiguration.DEFAULT_NAMESPACE;
+            this.name = name;
+            this.labels = labels;
             this.servicePort = servicePort;
             this.serviceTargetPort = serviceTargetPort;
             this.nodePort = -1;
         }
 
-        public Builder serviceNamespace(String val) {
-            this.serviceNamespace = val;
+        public Builder namespace(String val) {
+            this.namespace = val;
             return this;
         }
 
@@ -73,57 +81,30 @@ public class NodePortServiceProperties {
 
 
     /**
-     * Gets serviceNamespace.
+     * Gets namespace.
      *
-     * @return Value of serviceNamespace.
+     * @return Value of namespace.
      */
-    public String getServiceNamespace() {
-        return this.serviceNamespace;
+    public String getNamespace() {
+        return this.namespace;
     }
 
     /**
-     * Sets serviceNamespace.
+     * Gets name.
      *
-     * @param serviceNamespace Simple param.
+     * @return Value of name.
      */
-    public void setServiceNamespace(String serviceNamespace) {
-        this.serviceNamespace = serviceNamespace;
+    public String getName() {
+        return this.name;
     }
 
     /**
-     * Gets serviceName.
+     * Gets labels.
      *
-     * @return Value of serviceName.
+     * @return Value of labels.
      */
-    public String getServiceName() {
-        return this.serviceName;
-    }
-
-    /**
-     * Sets serviceName.
-     *
-     * @param serviceName Simple param.
-     */
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    /**
-     * Gets appLabel.
-     *
-     * @return Value of appLabel.
-     */
-    public String getAppLabel() {
-        return this.appLabel;
-    }
-
-    /**
-     * Sets appLabel.
-     *
-     * @param appLabel Simple param.
-     */
-    public void setAppLabel(String appLabel) {
-        this.appLabel = appLabel;
+    public Map<String, String> getLabels() {
+        return this.labels;
     }
 
     /**
@@ -136,15 +117,6 @@ public class NodePortServiceProperties {
     }
 
     /**
-     * Sets servicePort.
-     *
-     * @param servicePort Simple param.
-     */
-    public void setServicePort(Integer servicePort) {
-        this.servicePort = servicePort;
-    }
-
-    /**
      * Gets serviceTargetPort.
      *
      * @return Value of serviceTargetPort.
@@ -154,29 +126,11 @@ public class NodePortServiceProperties {
     }
 
     /**
-     * Sets serviceTargetPort.
-     *
-     * @param serviceTargetPort Simple param.
-     */
-    public void setServiceTargetPort(Integer serviceTargetPort) {
-        this.serviceTargetPort = serviceTargetPort;
-    }
-
-    /**
      * Gets nodePort.
      *
      * @return Value of nodePort.
      */
     public Integer getNodePort() {
         return this.nodePort;
-    }
-
-    /**
-     * Sets nodePort.
-     *
-     * @param nodePort Simple param.
-     */
-    public void setNodePort(Integer nodePort) {
-        this.nodePort = nodePort;
     }
 }
