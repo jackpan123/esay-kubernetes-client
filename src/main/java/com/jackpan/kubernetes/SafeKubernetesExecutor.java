@@ -2,6 +2,7 @@ package com.jackpan.kubernetes;
 
 import com.jackpan.kubernetes.request.DeploymentProperties;
 import com.jackpan.kubernetes.request.NodePortServiceProperties;
+import io.kubernetes.client.custom.V1Patch;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.models.*;
 import org.apache.commons.compress.utils.IOUtils;
@@ -95,7 +96,17 @@ public class SafeKubernetesExecutor implements KubernetesExecutor {
                 .withContainers(v1ContainerBuilder.build())
                 .endSpec().endTemplate().endSpec();
 
-        return createDeploymentInternal(properties.getNamespace(), builder.build());
+        return createDeploymentInternal(namespace, builder.build());
+    }
+
+    private static String JSON_PATCH_PREFIX = "[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/0/image\",\"value\":\"";
+    private static String JSON_PATCH_SUFFIX = "\"}]";
+
+    @Override
+    public V1Deployment patchDeploymentImageVersion(String namespace, DeploymentProperties properties) throws ApiException {
+        String jsonPatchStr = JSON_PATCH_PREFIX + properties.image() + JSON_PATCH_SUFFIX;
+        V1Patch body = new V1Patch(jsonPatchStr);
+        return this.client.getAppsApi().patchNamespacedDeployment(properties.getName(), namespace, body, DEFAULT_PRETTY, null, null, null);
     }
 
     @Override
@@ -149,7 +160,7 @@ public class SafeKubernetesExecutor implements KubernetesExecutor {
              String configMapName, List<String> configFileList)
             throws ApiException {
         V1Deployment v1Deployment = KubernetesExecutorFactory
-                .buildNginxDeployemntWithConfigMap(properties,
+                .buildNginxDeploymentWithConfigMap(properties,
                         configMapName, configFileList);
         return this.createDeployment(properties.getNamespace(), v1Deployment);
     }

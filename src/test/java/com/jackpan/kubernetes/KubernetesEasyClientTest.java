@@ -12,6 +12,7 @@ import io.kubernetes.client.util.KubeConfig;
 import java.io.FileReader;
 import java.io.IOException;
 import org.junit.Assert;
+import org.junit.Test;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 /**
@@ -100,14 +101,16 @@ public final class KubernetesEasyClientTest {
      *
      * @throws IOException If something goes wrong.
      */
-    //@Test
+    @Test
     public void minimizeCreateDeploymentTest() throws IOException, ApiException {
         KubernetesEasyClient client = KubernetesEasyClient
             .buildClient(this.kubeConfigPath);
-        DeploymentProperties.Builder build = new DeploymentProperties.Builder("jack-test", "nginx", "1.14.2");
+        DeploymentProperties.Builder build = new DeploymentProperties.Builder("jack-test12", "nginx", "1.14.2");
         KubernetesExecutor executor = new SafeKubernetesExecutor(client);
 
         V1Deployment aDefault = executor.minimizeCreateStatelessDeployment("default", build.build());
+
+
 
     }
 

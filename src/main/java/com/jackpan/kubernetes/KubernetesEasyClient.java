@@ -1,7 +1,6 @@
 package com.jackpan.kubernetes;
 
 import com.jackpan.kubernetes.request.NginxProperties;
-import com.jackpan.kubernetes.request.NodePortServiceProperties;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
@@ -14,7 +13,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static com.jackpan.kubernetes.constant.KubernetesConfiguration.*;

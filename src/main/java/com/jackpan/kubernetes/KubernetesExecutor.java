@@ -61,4 +61,6 @@ public interface KubernetesExecutor {
     V1Namespace createNamespace(String namespace) throws ApiException;
 
     V1Status deleteNamespace(String namespace) throws ApiException;
+
+    V1Deployment patchDeploymentImageVersion(String namespace, DeploymentProperties properties) throws ApiException;
 }

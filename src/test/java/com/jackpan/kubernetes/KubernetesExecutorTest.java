@@ -21,18 +21,20 @@ public class KubernetesExecutorTest {
      * Test kube config path.
      */
     private String kubeConfigPath = "src/main/resources/config";
+    private String kubeConfigPath1 = "src/main/resources/config1";
 
     //@Test
     public void createConfigMapTest() throws IOException, ApiException {
         KubernetesEasyClient client = KubernetesEasyClient
-                .buildClient(this.kubeConfigPath);
+                .buildClient(KubernetesEasyClient.loadKubeConfig(KubernetesEasyClient.convertYamlFileToString(new FileReader(new File(kubeConfigPath)))));
 
+        System.out.println(client.getCoreApi());
+        System.out.println();
         KubernetesExecutor executor = new SafeKubernetesExecutor(client);
-        Map<String, String> map = new HashMap<>();
-        map.put("special.how", "jack");
-//        FileInputS tream inputStream = new FileInputStream(file);
-//        IOUtils.toByteArray();
-        executor.createConfigMap("jack-config", "default", map);
+//        Map<String, String> map = new HashMap<>();
+//        map.put("special.how", "jack");
+//        executor.createConfigMap("jack-config2", "default", map);
+        executor.createNamespace("jackhahah");
     }
 
     //@Test
@@ -74,7 +76,7 @@ public class KubernetesExecutorTest {
         System.out.println();
     }
 
-    @Test
+    //@Test
     public void createService() throws ApiException, IOException {
         KubernetesEasyClient client = KubernetesEasyClient
                 .buildClient(this.kubeConfigPath);
@@ -87,5 +89,18 @@ public class KubernetesExecutorTest {
                 labels, 3306, 3306).build();
         V1Service aDefault = executor.minimizeCreateService("default", properties);
         System.out.println();
+    }
+
+
+    @Test
+    public void patchDeploymentTest() throws IOException, ApiException {
+        KubernetesEasyClient client = KubernetesEasyClient
+                .buildClient(KubernetesEasyClient.loadKubeConfig(KubernetesEasyClient.convertYamlFileToString(new FileReader(new File(kubeConfigPath)))));
+
+        System.out.println(client.getCoreApi());
+        System.out.println();
+        KubernetesExecutor executor = new SafeKubernetesExecutor(client);
+        DeploymentProperties build = new DeploymentProperties.Builder("jack-test1221", "nginx", "1.16.1").build();
+        V1Deployment v1Deployment = executor.patchDeploymentImageVersion("jackhahah", build);
     }
 }
