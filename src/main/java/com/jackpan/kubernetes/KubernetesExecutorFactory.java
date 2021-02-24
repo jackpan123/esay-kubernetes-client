@@ -5,6 +5,7 @@ import io.kubernetes.client.openapi.models.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.jackpan.kubernetes.constant.KubernetesConfiguration.*;
 
@@ -14,101 +15,24 @@ import static com.jackpan.kubernetes.constant.KubernetesConfiguration.*;
  */
 public class KubernetesExecutorFactory {
 
-    private static final String NGINX_VOLUME_NAME = "nginx-conf";
 
-    private static final String NGINX_CONF_PATH = "/etc/nginx/";
-
-    /**
-     * Default volume name in tomcat yaml.
-     */
-    private static final String TOMCAT_VOLUME_NAME = "tomcat-conf";
-
-    /**
-     * Tomcat server xml path in tomcat jdk8 image.
-     */
-    private static final String TOMCAT_SERVER_XML = "/usr/local/tomcat/conf";
-
-    /**
-     * Tomcat server xml path in tomcat jdk8 image.
-     */
-    //private static final String TOMCAT_SERVER_XML = "/usr/local/tomcat/conf";
-
+    @Deprecated
     public static V1Deployment buildNginxDeploymentWithConfigMap
-            (DeploymentProperties properties,
-             String configMapName, List<String> configFileList) {
-
-        if (configFileList.isEmpty()) {
-            throw new IllegalArgumentException("configFileList elements must greater than one!");
-        }
-        // Create port.
-        V1ContainerPortBuilder v1ContainerPortBuilder = null;
-
-        V1ContainerBuilder v1ContainerBuilder = new V1ContainerBuilder()
-                .withName(properties.getContainerName())
-                .withImage(properties.image());
-
-        if (properties.getContainerPort() != null) {
-            v1ContainerPortBuilder = new V1ContainerPortBuilder()
-                    .withContainerPort(properties.getContainerPort());
-            v1ContainerBuilder.withPorts(v1ContainerPortBuilder.build());
-        }
-
-        // Create volume mount path.
-        List<V1VolumeMount> mountFileList = new ArrayList<>(configFileList.size());
-
-        List<V1KeyToPath> keyToPathList = new ArrayList<>(configFileList.size());
-
-        for (String configFileName : configFileList) {
-            mountFileList.add(new V1VolumeMountBuilder()
-                    .withName(NGINX_VOLUME_NAME)
-                    .withMountPath(NGINX_CONF_PATH + configFileName)
-                    .withSubPath(configFileName)
-                    .withReadOnly(true).build());
-
-            keyToPathList.add(new V1KeyToPathBuilder()
-                    .withKey(configFileName)
-                    .withPath(configFileName).build());
-        }
-
-        v1ContainerBuilder.withVolumeMounts(mountFileList);
-
-        // Create volumes.
-        V1VolumeBuilder v1VolumeBuilder = new V1VolumeBuilder();
-        v1VolumeBuilder.withName(NGINX_VOLUME_NAME).withConfigMap(
-                new V1ConfigMapVolumeSourceBuilder()
-                        .withName(configMapName)
-                        .withItems(keyToPathList)
-                        .build());
-
-        V1DeploymentBuilder builder = new V1DeploymentBuilder()
-            .withApiVersion(APP_VERSION)
-            .withKind(DEPLOYMENT_KIND)
-            .withNewMetadata()
-            .withName(properties.getName())
-            .withLabels(properties.getLabels())
-            .endMetadata()
-            .withNewSpec()
-            .withNewSelector()
-            .withMatchLabels(properties.getLabels())
-            .endSelector()
-            .withReplicas(properties.getReplicas())
-            .withNewTemplate()
-            .withNewMetadata()
-            .withLabels(properties.getLabels())
-            .endMetadata()
-            .withNewSpec()
-            .withContainers(v1ContainerBuilder.build())
-            .withVolumes(v1VolumeBuilder.build())
-            .endSpec().endTemplate().endSpec();
-
-        return builder.build();
+    (DeploymentProperties properties,
+     String configMapName, List<String> configFileList) {
+        return null;
     }
 
-    public static V1Deployment buildTomcatDeploymentWithConfigMap
-            (DeploymentProperties properties,
-             String configMapName, List<String> configFileList) {
-        if (configFileList.isEmpty()) {
-            throw new IllegalArgumentException("configFileList elements must greater than one!");
+
+    /**
+     *
+     * @param properties Properties file.
+     * @param configMapPairs
+     * @return
+     */
+    public static V1Deployment buildDeploymentWithConfigMap(DeploymentProperties properties, Map<String, Map<String, String>> configMapPairs) {
+        if (configMapPairs.isEmpty()) {
+            throw new IllegalArgumentException("configMapPairs elements must greater than one!");
         }
         // Create port.
         V1ContainerPortBuilder v1ContainerPortBuilder = null;
@@ -124,31 +48,36 @@ public class KubernetesExecutorFactory {
         }
 
         // Create volume mount path.
-        List<V1VolumeMount> mountFileList = new ArrayList<>(configFileList.size());
+        List<V1VolumeMount> mountFileList = new ArrayList<>();
 
-        List<V1KeyToPath> keyToPathList = new ArrayList<>(configFileList.size());
+        List<V1Volume> v1Volumes = new ArrayList<>();
 
-        for (String configFileName : configFileList) {
-            mountFileList.add(new V1VolumeMountBuilder()
-                    .withName(NGINX_VOLUME_NAME)
-                    .withMountPath(NGINX_CONF_PATH + configFileName)
-                    .withSubPath(configFileName)
-                    .withReadOnly(true).build());
+        configMapPairs.forEach((configMapName, entity) -> {
+            List<V1KeyToPath> keyToPathList = new ArrayList<>();
+            V1VolumeBuilder v1VolumeBuilder = new V1VolumeBuilder();
 
-            keyToPathList.add(new V1KeyToPathBuilder()
-                    .withKey(configFileName)
-                    .withPath(configFileName).build());
-        }
+            entity.forEach((absolutePath, configName) -> {
+                mountFileList.add(new V1VolumeMountBuilder()
+                        .withName(configMapName)
+                        .withMountPath(absolutePath)
+                        .withSubPath(configName)
+                        .withReadOnly(false).build());
+
+                keyToPathList.add(new V1KeyToPathBuilder()
+                        .withKey(configName)
+                        .withPath(configName).build());
+            });
+
+            v1VolumeBuilder.withName(configMapName).withConfigMap(
+                    new V1ConfigMapVolumeSourceBuilder()
+                            .withName(configMapName)
+                            .withItems(keyToPathList)
+                            .build());
+
+            v1Volumes.add(v1VolumeBuilder.build());
+        });
 
         v1ContainerBuilder.withVolumeMounts(mountFileList);
-
-        // Create volumes.
-        V1VolumeBuilder v1VolumeBuilder = new V1VolumeBuilder();
-        v1VolumeBuilder.withName(NGINX_VOLUME_NAME).withConfigMap(
-                new V1ConfigMapVolumeSourceBuilder()
-                        .withName(configMapName)
-                        .withItems(keyToPathList)
-                        .build());
 
         V1DeploymentBuilder builder = new V1DeploymentBuilder()
                 .withApiVersion(APP_VERSION)
@@ -168,8 +97,10 @@ public class KubernetesExecutorFactory {
                 .endMetadata()
                 .withNewSpec()
                 .withContainers(v1ContainerBuilder.build())
-                .withVolumes(v1VolumeBuilder.build())
+                .withVolumes(v1Volumes)
                 .endSpec().endTemplate().endSpec();
+
+        System.out.println(builder.build().toString());
 
         return builder.build();
     }

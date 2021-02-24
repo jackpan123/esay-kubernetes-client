@@ -3,11 +3,13 @@ package com.jackpan.kubernetes;
 import com.jackpan.kubernetes.request.DeploymentProperties;
 import com.jackpan.kubernetes.request.NodePortServiceProperties;
 import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.models.V1ConfigMap;
 import io.kubernetes.client.openapi.models.V1Deployment;
 import io.kubernetes.client.openapi.models.V1Service;
 import org.junit.Test;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +23,6 @@ public class KubernetesExecutorTest {
      * Test kube config path.
      */
     private String kubeConfigPath = "src/main/resources/config";
-    private String kubeConfigPath1 = "src/main/resources/config1";
 
     //@Test
     public void createConfigMapTest() throws IOException, ApiException {
@@ -35,6 +36,12 @@ public class KubernetesExecutorTest {
 //        map.put("special.how", "jack");
 //        executor.createConfigMap("jack-config2", "default", map);
         executor.createNamespace("jackhahah");
+    }
+
+    private SafeKubernetesExecutor connectClient() throws IOException {
+        KubernetesEasyClient client = KubernetesEasyClient
+                .buildClient(KubernetesEasyClient.loadKubeConfig(KubernetesEasyClient.convertYamlFileToString(new FileReader(new File(kubeConfigPath)))));
+        return new SafeKubernetesExecutor(client);
     }
 
     //@Test
@@ -73,7 +80,6 @@ public class KubernetesExecutorTest {
         KubernetesExecutor executor = new SafeKubernetesExecutor(client);
 
         //V1Deployment mySQLDeploymentWithConfigMap = executor.createMySQLDeployment();
-        System.out.println();
     }
 
     //@Test
@@ -92,7 +98,7 @@ public class KubernetesExecutorTest {
     }
 
 
-    @Test
+    //@Test
     public void patchDeploymentTest() throws IOException, ApiException {
         KubernetesEasyClient client = KubernetesEasyClient
                 .buildClient(KubernetesEasyClient.loadKubeConfig(KubernetesEasyClient.convertYamlFileToString(new FileReader(new File(kubeConfigPath)))));
@@ -100,7 +106,35 @@ public class KubernetesExecutorTest {
         System.out.println(client.getCoreApi());
         System.out.println();
         KubernetesExecutor executor = new SafeKubernetesExecutor(client);
-        DeploymentProperties build = new DeploymentProperties.Builder("jack-test1221", "nginx", "1.16.1").build();
+        DeploymentProperties build = new DeploymentProperties.Builder("jack-test12", "nginx", "1.16.1").build();
         V1Deployment v1Deployment = executor.patchDeploymentImageVersion("jackhahah", build);
     }
+
+    //@Test
+    public void createConfigMapWithFileTest() throws IOException, ApiException {
+        KubernetesExecutor executor = connectClient();
+        V1ConfigMap aDefault = executor.createConfigMapWithInputStream("test-tomcat-conf", "default",
+                "catalina.sh", new FileInputStream(new File("/Users/jackpan/Downloads/catalina.sh")));
+    }
+
+    //@Test
+    public void createTomcatDeployment() throws IOException, ApiException {
+        KubernetesExecutor executor = connectClient();
+        DeploymentProperties build = new DeploymentProperties.Builder("jack-test-tomcat", "tomcat", "jdk8").build();
+        V1Deployment aDefault = executor.minimizeCreateStatelessDeployment("default", build);
+    }
+
+    //@Test
+    public void createNginxDeployment() throws IOException, ApiException {
+        KubernetesExecutor executor = connectClient();
+        DeploymentProperties build = new DeploymentProperties.Builder("jack-test-nginx", "nginx", "1.14.2").build();
+        Map<String, Map<String, String>> map = new HashMap<>();
+        Map<String, String> configField = new HashMap<>();
+        configField.put("/etc/nginx/nginx.conf", "nginx.conf");
+        configField.put("/etc/nginx/default.conf", "default.conf");
+        map.put("nginx-config1", configField);
+        V1Deployment v1Deployment = KubernetesExecutorFactory.buildDeploymentWithConfigMap(build, map);
+        V1Deployment aDefault = executor.createDeployment("default", v1Deployment);
+    }
+
 }
